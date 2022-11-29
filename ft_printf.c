@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/11/29 15:56:12 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/11/29 17:22:46 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,26 +29,30 @@ stdarg(3)) are converted for output.*/
 #include <stdarg.h>
 #include <stdio.h>
 
-int	ft_printf(const char format, ...)
+int	ft_printf(const char *format, ...)
 {
+	char	current_type;
 	va_list ap;
-	
 	va_start(ap, format);
-	
-	printf("%i\n", va_arg(ap, int));
-	printf("%i\n", va_arg(ap, int));
-	printf("%i\n", va_arg(ap, int));
-	printf("%i\n", va_arg(ap, int));
-	printf("%i\n", va_arg(ap, int));
+	while(*format)
+	{
+		current_type = NULL;
+		if (*format == '%')
+			current_type = *(format++ + 1);
+		if (current_type)
+			ft_write(current_type, )
+		format++;
+	}
 	va_end(ap);
 }
 
 
 int main()
 {
-	ft_printf(1,2,3,4,5,6,7,8);
-	printf("%5d\n", 15, 123, 50);
+	ft_printf("asd%c", 33, 20, 30, 40, 50, 60);
+	printf("%+15d asd", (char)50);
 }
+
 /*printf
 
 format of format string contains 0 or more of:
@@ -66,6 +70,10 @@ mandatory conversion specifiers:
 	%x Prints a number in hexadecimal (base 16) lowercase format.
 	%X Prints a number in hexadecimal (base 16) uppercase format.
 	%% Prints a percent sign.
+	extract all the formats
 
-extract all the formats
+bonus 1
+	manage any combination of the following flags -> '-0.' and the field minimum width under all conversions
+bonus 2
+	Manage all the following flags: '# +' (Yes, one of them is a space)
 */
