@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/14 17:04:54 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/15 19:33:39 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,17 +35,32 @@ stdarg(3)) are converted for output.*/
 
 typedef struct s_format
 {
+	int		invalid;
 	char	flags[6];
 	int		field_width;
 	int		precision;
 	char	specifier;
-	int		start;
+	int		index;
 	int		size;
+	int		cursor;
 } t_format;
 
-void	ft_putchar(char c)
+int	ft_putchar(char c)
 {
-	write(1, &c, 1);
+	return write(1, &c, 1);
+}
+
+void	print_format(t_format format)
+{
+	printf( "\ninvalid     = %i\n"
+			"flags       = %s\n"
+			"field_width = %i\n"
+			"precision   = %i\n"
+			"specifier   = %c\n"
+			"index       = %i\n"
+			"size        = %i\n"
+			"cursor      = %i\n",
+			format.invalid, format.flags, format.field_width, format.precision, format.specifier, format.index, format.size, format.cursor);
 }
 
 void	set_specifier(const char *format_str, int index, t_format *format)
@@ -64,7 +79,7 @@ void	set_specifier(const char *format_str, int index, t_format *format)
 			if (format_str[index + i] == specifiers[j])
 			{
 				format->specifier = specifiers[j];
-				format->start = index;
+				format->index = index;
 				format->size = i + 1;
 				return ;
 			}
@@ -75,73 +90,149 @@ void	set_specifier(const char *format_str, int index, t_format *format)
 	return ;
 }
 
-void	print_format(t_format format)
+int	set_flags(const char *format_str,int index, t_format *format)
 {
-	printf( "\nflags       = %s\n"
-			"field_width = %i\n"
-			"precision   = %i\n"
-			"specifier   = %c\n"
-			"start       = %i\n"
-			"size        = %i\n",
-			format.flags, format.field_width, format.precision, format.specifier, format.start, format.size);
+	char	*found;
+	char	*flags;
+	int		j;
+
+	j = 0;
+	flags = "-0# +";
+	format->cursor = index + 1;//+ 1 is to skip the first % of the format specifier entry
+	while (format->cursor - index < format->size)
+	{
+		found = strchr(flags, format_str[format->cursor]);
+		if (found)
+		{
+			if (strchr(format->flags, *found))
+				return (-1);
+			else
+				format->flags[j++] = *found;
+		}
+		else
+			return (0);
+		format->cursor++;
+	}
+	return (0);
+}
+
+int	set_field_width(const char *format_str,int index, t_format *format)
+{
+	char	*digits;
+	char	width[10];
+	int		j;
+
+	digits = "0123456789";
+	j = 0;
+	while (strchr(digits, format_str[format->cursor]) && format->cursor - index < format->size)
+	{
+		width[j++] = format_str[format->cursor++];
+		if (j >= 10)
+			return (-1);
+	}
+	format->field_width = atoi(width);
+	if (format->field_width == -1)//need to modify atoi and make it return 0 in case of error(string cant be converted to int)
+		return (-1);
+	return (0);
+}
+
+int	set_precision(const char *format_str,int index, t_format *format)
+{
+	char	*digits;
+	char	precision[10];
+	int		j;
+
+
+	digits = "0123456789";
+	j = 0;
+	if (format_str[format->cursor] != '.')
+	{
+		format->precision = -1;
+		return (0);
+	}
+	format->cursor++;
+	while (strchr(digits, format_str[format->cursor]) && format->cursor - index < format->size)
+	{
+		precision[j++] = format_str[format->cursor++];
+		if (j >= 10)
+			return (-1);
+	}
+	format->precision = atoi(precision);
+	if (format->precision == -1)//same as set_field_width
+		return (-1);
+	return (0);
 }
 
 t_format	new_format(const char *format_str, int index)
 {
 	t_format	format;
-	int			i;
 
-	format.precision = 0;
-	format.field_width = 0;
-	format.start = 0;
+	format.cursor = 0;
+	format.invalid = 0;
 	set_specifier(format_str, index, &format);
-	i = 0;
-	while (i < 6)
-		format.flags[i++] = 0;
-	//print_format(format);
+	//format.invalid = -1; check if this is needed with an if above
+	if (set_flags(format_str, index, &format))
+		format.invalid = -1;
+	if (set_field_width(format_str, index, &format))
+		format.invalid = -1;
+	if (set_precision(format_str, index, &format))
+		format.invalid = -1;
+	print_format(format);
 	return (format);
 }
 
 int	convert(const char *format_str, int index, t_format format, va_list ap)
 {
-	specifiers = "cspdiuxX%";
-
+	//specifiers = "cspdiuxX%";
 	if (format.specifier == 'c')
-		ft_putchar(va_arg(ap, int));
-	return 0;
+		return ft_putchar(va_arg(ap, int));
+	else if (format.specifier == 's')
+		ft_putstr_fd(va_arg(ap, char*), 1);
+	return (0);
 }
 
 int	ft_printf(const char *format_str, ...)
 {
+	int			byte_count;
 	int			i;
 	va_list		ap;
 	t_format	format;
-	
+
 	va_start(ap, format_str);
 	i = 0;
+	byte_count = 0;
 	while(format_str[i])
 	{
 		if (format_str[i] == '%')
 		{
 			format = new_format(format_str, i);
-			//if (!is_valid_format(format))
-			//	return (0);
-			convert(format_str, i, format, ap);
+			if (format.invalid)
+				return (-1);
+			byte_count += convert(format_str, i, format, ap);
 			i += format.size;
 		}
 		else
-			ft_putchar(format_str[i++]);
+			byte_count += ft_putchar(format_str[i++]);
 	}
 	va_end(ap);
-	return 1;
+	return (byte_count);
 }
 
 #include <stdio.h>
 
 int main()
 {
-	ft_printf("asd%  cabc\n", 'Z');
-	printf("asd%  cabc\n", 'Z');
+	char	*str;
+	char	*str_ret;
+	int ret;
+
+	str = "12345%c54321\n";
+	str_ret = "\nret = %i\n";
+	ret = 0;
+	ret = ft_printf(str, 'z');
+	printf(str_ret, ret);
+	ret = printf(str, 'z');
+	printf(str_ret, ret);
 }
 
 /*printf
@@ -168,7 +259,8 @@ mandatory conversion specifiers:
 	extract all the formats
 
 bonus 1
-	manage any combination of the following fThe value should be converted to an "alternate form".  For
+	manage any combination of the following f
+		#	  The value should be converted to an "alternate form".  For
               o conversions, the first character of the output string is
               made zero (by prefixing a 0 if it was not zero already).
               For x and X conversions, a nonzero result has the string
