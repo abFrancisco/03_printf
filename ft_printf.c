@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/15 19:33:39 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/16 17:42:04 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,21 +45,58 @@ typedef struct s_format
 	int		cursor;
 } t_format;
 
+int	flag_in_format(char flag, char *flags)
+{
+	if (ft_strchr(flags, flag))
+		return (1);
+	return (0);
+}
+
 int	ft_putchar(char c)
 {
 	return write(1, &c, 1);
 }
 
+int ft_putstr(char *str, t_format format)
+{
+	int	i;
+	int	j;
+	int	len;
+
+	len = ft_strlen(str);
+	j = 0;
+	i = 0;
+	while (!flag_in_format('-', format.flags) && (format.field_width > len || format.field_width > format.precision))
+	{
+		format.field_width--;
+		write(1, " ", 1);
+		j++;
+	}
+	while (str[i] && i < format.precision)
+	{
+		write(1, &str[i++], 1);
+		if (i < format.precision && str[i + 1] == '\0')
+			write(1, &str[i + 1], 1);
+	}
+	while (format.field_width > len || format.field_width > format.precision)
+	{
+		format.field_width--;
+		write(1, " ", 1);
+		j++;
+	}
+	return (i + j);
+}
+
 void	print_format(t_format format)
 {
-	printf( "\ninvalid     = %i\n"
+	printf( "\n\ninvalid     = %i\n"
 			"flags       = %s\n"
 			"field_width = %i\n"
 			"precision   = %i\n"
 			"specifier   = %c\n"
 			"index       = %i\n"
 			"size        = %i\n"
-			"cursor      = %i\n",
+			"cursor      = %i\n\n",
 			format.invalid, format.flags, format.field_width, format.precision, format.specifier, format.index, format.size, format.cursor);
 }
 
@@ -157,6 +194,7 @@ int	set_precision(const char *format_str,int index, t_format *format)
 		if (j >= 10)
 			return (-1);
 	}
+	precision[j] = '\0';
 	format->precision = atoi(precision);
 	if (format->precision == -1)//same as set_field_width
 		return (-1);
@@ -177,17 +215,17 @@ t_format	new_format(const char *format_str, int index)
 		format.invalid = -1;
 	if (set_precision(format_str, index, &format))
 		format.invalid = -1;
-	print_format(format);
 	return (format);
 }
 
-int	convert(const char *format_str, int index, t_format format, va_list ap)
+int	convert(t_format format, va_list ap)
 {
 	//specifiers = "cspdiuxX%";
 	if (format.specifier == 'c')
 		return ft_putchar(va_arg(ap, int));
 	else if (format.specifier == 's')
-		ft_putstr_fd(va_arg(ap, char*), 1);
+		return ft_putstr(va_arg(ap, char*), format);
+
 	return (0);
 }
 
@@ -208,7 +246,7 @@ int	ft_printf(const char *format_str, ...)
 			format = new_format(format_str, i);
 			if (format.invalid)
 				return (-1);
-			byte_count += convert(format_str, i, format, ap);
+			byte_count += convert(format, ap);
 			i += format.size;
 		}
 		else
@@ -226,12 +264,23 @@ int main()
 	char	*str_ret;
 	int ret;
 
-	str = "12345%c54321\n";
-	str_ret = "\nret = %i\n";
-	ret = 0;
-	ret = ft_printf(str, 'z');
+ 	str_ret = "\nReturn = %i\n\n\n\n\n";
+	//CHAR TEST
+ 	//str = "12345%c54321\n";
+ 	//ret = 0;
+ 	//ret = ft_printf(str, 'z');
+ 	//printf(str_ret, ret);
+ 	//ret = printf(str, 'z');
+ 	//printf(str_ret, ret);
+
+	//STRING TEST
+	str = "12345%-2.2s4321";
+	printf("\nTEST STRING = %s\n", str);
+	printf("\n\nMY PRINTF\n");
+	ret = ft_printf(str, "hello world");
 	printf(str_ret, ret);
-	ret = printf(str, 'z');
+	printf("\n\nREAL PRINTF\n");
+	ret = printf(str, "hello world");
 	printf(str_ret, ret);
 }
 
