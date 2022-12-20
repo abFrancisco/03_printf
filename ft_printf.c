@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/20 17:57:37 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/20 18:12:03 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int	ft_putchar(char c)
 	return write(1, &c, 1);
 }
 ///////////////
-int	flag_in_format(char flag, char *flags)
+int	flag(char flag, char *flags)
 {
 	if (ft_strchr(flags, flag))
 		return (1);
@@ -52,7 +52,7 @@ int ft_putstr(char *str, t_format format)
 	i = 0;
 	if (format.precision == -1)
 		format.precision = 2147483647;
-	while (!flag_in_format('-', format.flags) && (format.field_width > len || format.field_width > format.precision))
+	while (!flag('-', format.flags) && (format.field_width > len || format.field_width > format.precision))
 	{
 		format.field_width--;
 		write(1, " ", 1);
@@ -74,12 +74,12 @@ int ft_putstr(char *str, t_format format)
 }
 //////////
 
-int	ft_putnbr(int nbr)
+int	ft_putnbr(int nbr, t_format format)
 {
 	char	*str = ft_itoa(nbr);
 	char	sign = ft_strchr(str, '-');
 
-	
+	if (format
 }
 int ft_putnbr_unsigned(unsigned int nbr);
 int ft_puthex(unsigned int hex);
@@ -134,6 +134,8 @@ int	set_flags(const char *format_str,int index, t_format *format)
 	j = 0;
 	flags = "-0# +";
 	format->cursor = index + 1;//+ 1 is to skip the first % of the format specifier entry
+	if (format->specifier == 'p')//this is an exception so that %p can be passed to puthex with the # flag
+		format->flags[j++] = '#';
 	while (format->cursor - index < format->size)
 	{
 		found = strchr(flags, format_str[format->cursor]);
