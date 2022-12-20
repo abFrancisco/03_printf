@@ -6,7 +6,7 @@
 #    By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/30 11:29:48 by falves-b          #+#    #+#              #
-#    Updated: 2022/11/30 13:39:32 by falves-b         ###   ########.fr        #
+#    Updated: 2022/12/20 13:33:31 by falves-b         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,17 +23,17 @@ RM      = rm -f
 CFLAGS = -Wall -Wextra -Werror
 .c.o:
 	${CC} ${CFLAGS} -c $< -o ${<:c=o}
+all: $(NAME) bonus
 $(NAME): ${OBJS}
 	ar rcs ${NAME} ${OBJS}
 bonus:	$(BONUS_OBJS)
 	ar rcs $(NAME) $(BONUS_OBJS)
-all:    ${NAME}
 clean:
 	${RM} ${OBJS} ${BONUS_OBJS}
 fclean: clean
 	${RM} ${NAME}
 re:     fclean all
-.PHONY : all clean fclean re bonus
+.PHONY : all clean fclean re 
 #so:
 #	$(CC) -nostartfiles -fPIC $(CFLAGS) $(SRCS) $(BONUS)
 #	gcc -nostartfiles -shared -o libft.so $(OBJS) $(BONUS_OBJS)

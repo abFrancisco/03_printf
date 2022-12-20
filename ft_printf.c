@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/16 17:42:04 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/20 17:57:37 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,36 +25,20 @@ All of these functions write the output under the control of a
 format string that specifies how subsequent arguments (or
 arguments accessed via the variable-length argument facilities of
 stdarg(3)) are converted for output.*/
-#include "libft/libft.h"
-#include <unistd.h>//write()
-#include <stdlib.h>//malloc
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
 
+#include "ft_printf.h"
 
-typedef struct s_format
+////////////////
+int	ft_putchar(char c)
 {
-	int		invalid;
-	char	flags[6];
-	int		field_width;
-	int		precision;
-	char	specifier;
-	int		index;
-	int		size;
-	int		cursor;
-} t_format;
-
+	return write(1, &c, 1);
+}
+///////////////
 int	flag_in_format(char flag, char *flags)
 {
 	if (ft_strchr(flags, flag))
 		return (1);
 	return (0);
-}
-
-int	ft_putchar(char c)
-{
-	return write(1, &c, 1);
 }
 
 int ft_putstr(char *str, t_format format)
@@ -66,13 +50,15 @@ int ft_putstr(char *str, t_format format)
 	len = ft_strlen(str);
 	j = 0;
 	i = 0;
+	if (format.precision == -1)
+		format.precision = 2147483647;
 	while (!flag_in_format('-', format.flags) && (format.field_width > len || format.field_width > format.precision))
 	{
 		format.field_width--;
 		write(1, " ", 1);
 		j++;
 	}
-	while (str[i] && i < format.precision)
+	while (str[i] && (i < format.precision))
 	{
 		write(1, &str[i++], 1);
 		if (i < format.precision && str[i + 1] == '\0')
@@ -86,20 +72,32 @@ int ft_putstr(char *str, t_format format)
 	}
 	return (i + j);
 }
+//////////
 
+int	ft_putnbr(int nbr)
+{
+	char	*str = ft_itoa(nbr);
+	char	sign = ft_strchr(str, '-');
+
+	
+}
+int ft_putnbr_unsigned(unsigned int nbr);
+int ft_puthex(unsigned int hex);
+
+//////////
 void	print_format(t_format format)
 {
-	printf( "\n\ninvalid     = %i\n"
+	printf( "\n-------------------------\ninvalid     = %i\n"
 			"flags       = %s\n"
 			"field_width = %i\n"
 			"precision   = %i\n"
 			"specifier   = %c\n"
 			"index       = %i\n"
 			"size        = %i\n"
-			"cursor      = %i\n\n",
+			"cursor      = %i\n-------------------------\n",
 			format.invalid, format.flags, format.field_width, format.precision, format.specifier, format.index, format.size, format.cursor);
 }
-
+/////////
 void	set_specifier(const char *format_str, int index, t_format *format)
 {
 	int		i;
@@ -141,32 +139,37 @@ int	set_flags(const char *format_str,int index, t_format *format)
 		found = strchr(flags, format_str[format->cursor]);
 		if (found)
 		{
-			if (strchr(format->flags, *found))
-				return (-1);
-			else
-				format->flags[j++] = *found;
+			if (!strchr(format->flags, *found))
+			format->flags[j++] = *found;
+			//RETUR I REMOVED FROM CONDITION(currently negated) not working with -1, with 0 works like printf, PRINTF is ignoring extra flag characters
 		}
 		else
 			return (0);
 		format->cursor++;
 	}
+	printf("just passed flags\n");
 	return (0);
 }
 
 int	set_field_width(const char *format_str,int index, t_format *format)
 {
 	char	*digits;
-	char	width[10];
+	char	width[11];
 	int		j;
 
 	digits = "0123456789";
 	j = 0;
 	while (strchr(digits, format_str[format->cursor]) && format->cursor - index < format->size)
 	{
+		printf("set width LOOP j=%i, char=%c\n", j, format_str[format->cursor]);
 		width[j++] = format_str[format->cursor++];
 		if (j >= 10)
+		{
+			width[j] = '\0';
 			return (-1);
+		}
 	}
+	width[j] = '\0';
 	format->field_width = atoi(width);
 	if (format->field_width == -1)//need to modify atoi and make it return 0 in case of error(string cant be converted to int)
 		return (-1);
@@ -179,7 +182,6 @@ int	set_precision(const char *format_str,int index, t_format *format)
 	char	precision[10];
 	int		j;
 
-
 	digits = "0123456789";
 	j = 0;
 	if (format_str[format->cursor] != '.')
@@ -188,6 +190,8 @@ int	set_precision(const char *format_str,int index, t_format *format)
 		return (0);
 	}
 	format->cursor++;
+	while (format_str[format->cursor] == '0')
+		format->cursor++;
 	while (strchr(digits, format_str[format->cursor]) && format->cursor - index < format->size)
 	{
 		precision[j++] = format_str[format->cursor++];
@@ -215,9 +219,10 @@ t_format	new_format(const char *format_str, int index)
 		format.invalid = -1;
 	if (set_precision(format_str, index, &format))
 		format.invalid = -1;
+	print_format(format);
 	return (format);
 }
-
+///////////////
 int	convert(t_format format, va_list ap)
 {
 	//specifiers = "cspdiuxX%";
@@ -225,7 +230,20 @@ int	convert(t_format format, va_list ap)
 		return ft_putchar(va_arg(ap, int));
 	else if (format.specifier == 's')
 		return ft_putstr(va_arg(ap, char*), format);
-
+	else if (format.specifier == 'p')
+		return ft_puthex(va_arg(ap, void*), format);
+	else if (format.specifier == 'd')
+		return ft_putnbr(va_arg(ap, int), format);
+	else if (format.specifier == 'i')
+		return ft_putnbr(va_arg(ap, int), format);
+	else if (format.specifier == 'u')
+		return ft_putnbr(va_arg(ap, unsigned int), format);
+	else if (format.specifier == 'x')
+		return ft_puthex(va_arg(ap, unsigned int), format);
+	else if (format.specifier == 'X')
+		return ft_puthex(va_arg(ap, unsigned int), format);
+	else if (format.specifier == '%')
+		return ft_putchar('%');
 	return (0);
 }
 
@@ -254,34 +272,6 @@ int	ft_printf(const char *format_str, ...)
 	}
 	va_end(ap);
 	return (byte_count);
-}
-
-#include <stdio.h>
-
-int main()
-{
-	char	*str;
-	char	*str_ret;
-	int ret;
-
- 	str_ret = "\nReturn = %i\n\n\n\n\n";
-	//CHAR TEST
- 	//str = "12345%c54321\n";
- 	//ret = 0;
- 	//ret = ft_printf(str, 'z');
- 	//printf(str_ret, ret);
- 	//ret = printf(str, 'z');
- 	//printf(str_ret, ret);
-
-	//STRING TEST
-	str = "12345%-2.2s4321";
-	printf("\nTEST STRING = %s\n", str);
-	printf("\n\nMY PRINTF\n");
-	ret = ft_printf(str, "hello world");
-	printf(str_ret, ret);
-	printf("\n\nREAL PRINTF\n");
-	ret = printf(str, "hello world");
-	printf(str_ret, ret);
 }
 
 /*printf
