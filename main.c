@@ -6,7 +6,7 @@
 /*   By: falves-b <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 13:37:37 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/20 18:18:35 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/21 17:25:03 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "ft_printf.h"
 #include "libft/libft.h"
 
-/*int main()
+int main()
 {
 	char	*str;
 	char	*str_ret;
@@ -38,11 +38,11 @@
 	printf("\n\nREAL PRINTF\n");
 	ret = printf(str, "hello world");
 	printf(str_ret, ret);
-}*/
-int main()
-{
-	char	*str;
-	str = "12345%c54321";
-	printf("%.0X\n\n\n",0);
-	return (0);
 }
+/*int main()
+{
+	printf("%%010i %010i\n", 5);
+	printf("%%010.i %010.i\n", 5);
+	printf("%%010.5i %010.5i\n", 5);
+	return (0);
+}*/

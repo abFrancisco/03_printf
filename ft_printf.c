@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/20 18:12:03 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/21 17:50:26 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,6 @@ int	ft_putchar(char c)
 	return write(1, &c, 1);
 }
 ///////////////
-int	flag(char flag, char *flags)
-{
-	if (ft_strchr(flags, flag))
-		return (1);
-	return (0);
-}
 
 int ft_putstr(char *str, t_format format)
 {
@@ -52,7 +46,10 @@ int ft_putstr(char *str, t_format format)
 	i = 0;
 	if (format.precision == -1)
 		format.precision = 2147483647;
-	while (!flag('-', format.flags) && (format.field_width > len || format.field_width > format.precision))
+	//put_pre();
+	//put_value();
+	//put_post();
+	while (format.flags['-'] && (format.field_width > len || format.field_width > format.precision))
 	{
 		format.field_width--;
 		write(1, " ", 1);
@@ -76,26 +73,37 @@ int ft_putstr(char *str, t_format format)
 
 int	ft_putnbr(int nbr, t_format format)
 {
-	char	*str = ft_itoa(nbr);
-	char	sign = ft_strchr(str, '-');
+//	char	*str = ft_itoa(nbr);
+//	char	sign = ft_strchr(str, '-');
 
-	if (format
+//	if (format
+	return (0);
 }
-int ft_putnbr_unsigned(unsigned int nbr);
-int ft_puthex(unsigned int hex);
+int ft_putnbr_unsigned(unsigned int nbr, t_format format)
+{
+	return (0);
+}
+int ft_puthex(unsigned int hex, t_format format)
+{
+	return (0);
+}
+int	ft_putptr(void *ptr, t_format format)
+{
+	return (0);
+}
 
 //////////
 void	print_format(t_format format)
 {
 	printf( "\n-------------------------\ninvalid     = %i\n"
-			"flags       = %s\n"
+			"flags       = %c%c%c%c%c\n"
 			"field_width = %i\n"
 			"precision   = %i\n"
 			"specifier   = %c\n"
 			"index       = %i\n"
 			"size        = %i\n"
 			"cursor      = %i\n-------------------------\n",
-			format.invalid, format.flags, format.field_width, format.precision, format.specifier, format.index, format.size, format.cursor);
+			format.invalid, format.flags['#'] + 32, format.flags['0'] + 32, format.flags['-'] + 32, format.flags[' '] + 32, format.flags['+'] + 32, format.field_width, format.precision, format.specifier, format.index, format.size, format.cursor);
 }
 /////////
 void	set_specifier(const char *format_str, int index, t_format *format)
@@ -135,21 +143,19 @@ int	set_flags(const char *format_str,int index, t_format *format)
 	flags = "-0# +";
 	format->cursor = index + 1;//+ 1 is to skip the first % of the format specifier entry
 	if (format->specifier == 'p')//this is an exception so that %p can be passed to puthex with the # flag
-		format->flags[j++] = '#';
+		format->flags['#'] = 1;
 	while (format->cursor - index < format->size)
 	{
 		found = strchr(flags, format_str[format->cursor]);
 		if (found)
 		{
-			if (!strchr(format->flags, *found))
-			format->flags[j++] = *found;
-			//RETUR I REMOVED FROM CONDITION(currently negated) not working with -1, with 0 works like printf, PRINTF is ignoring extra flag characters
+			format->flags[*found] = 1;
+		//RETUR I REMOVED FROM CONDITION(currently negated) not working with -1, with 0 works like printf, PRINTF is ignoring extra flag characters
+			format->cursor++;
 		}
 		else
-			return (0);
-		format->cursor++;
+			return (0);//check if this is needed
 	}
-	printf("just passed flags\n");
 	return (0);
 }
 
@@ -233,7 +239,7 @@ int	convert(t_format format, va_list ap)
 	else if (format.specifier == 's')
 		return ft_putstr(va_arg(ap, char*), format);
 	else if (format.specifier == 'p')
-		return ft_puthex(va_arg(ap, void*), format);
+		return ft_putptr(va_arg(ap, void*), format);
 	else if (format.specifier == 'd')
 		return ft_putnbr(va_arg(ap, int), format);
 	else if (format.specifier == 'i')

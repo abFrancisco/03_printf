@@ -13,7 +13,7 @@ DEPS=ft_printf.h libft/libft.h
 	$(CC) $(CFLAGS) -c $< -o $(<:c=o)
 
 all: $(NAME) libft/libft.a
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) $(DEPS)
 	ar rcs $(NAME) $(OBJS) libft/libft.a
 libft/libft.a:
 	$(MAKE_LIBFT) all

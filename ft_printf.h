@@ -6,7 +6,7 @@
 /*   By: falves-b <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 13:58:18 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/20 14:43:50 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/21 17:36:39 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 typedef struct s_format
 {
 	int     invalid;
-	char    flags[6];
+	char    flags[7];
 	int     field_width;
 	int     precision;
 	char    specifier;
@@ -32,6 +32,10 @@ typedef struct s_format
 	int     cursor;
 } t_format;
 
+int ft_putnbr(int nbr, t_format format);
+int ft_putnbr_unsigned(unsigned int nbr, t_format format);
+int ft_puthex(unsigned int hex, t_format format);
+int	ft_putptr(void *ptr, t_format format);
 int	flag_in_format(char flag, char *flags);
 int	ft_putchar(char c);
 int ft_putstr(char *str, t_format format);
