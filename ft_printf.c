@@ -6,7 +6,7 @@
 /*   By: falves-b <falves-b@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 14:51:32 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/21 17:50:26 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/23 13:04:15 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ int ft_putstr(char *str, t_format format)
 	while (str[i] && (i < format.precision))
 	{
 		write(1, &str[i++], 1);
-		if (i < format.precision && str[i + 1] == '\0')
+		if (i < format.precision && str[i] == '\0')
 			write(1, &str[i + 1], 1);
 	}
 	while (format.field_width > len || format.field_width > format.precision)
@@ -73,13 +73,33 @@ int ft_putstr(char *str, t_format format)
 
 int	ft_putnbr(int nbr, t_format format)
 {
-//	char	*str = ft_itoa(nbr);
-//	char	sign = ft_strchr(str, '-');
+	char	*str;
+	char	sign;
+	int		len;
 
-//	if (format
-	return (0);
+	str = ft_itoa(nbr);
+	sign = '+';
+	if (ft_strchr(str, '-'))
+		sign = '-';
+	str = ft_strtrim(str, "-");
+	len = ft_strlen(str);
+	if (format.flags[' '] && nbr >= 0)
+		write(1, " ", 1);
+	if (format.flags['+'])
+		write(1, &sign, 1);//this is wrong when right aligned, probably as all of the ifs in this function, maybe try and alter string instead of writing to output directly
+	if (format.precision >= 0)
+		while (format.precision - len++)
+			write(1, "0", 1);
+	else if (format.flags['0'])
+		while (format.field_width - len++)
+			write(1, "0", 1);
+	ft_putstr(str, format);
+	free(str);//this is needed, allocated on call to ft_itoa(nbr) above;
+	if (nbr >=0)
+		return (len + format.flags[' '] + format.flags['+']);
+	return (len + format.flags['+']);
 }
-int ft_putnbr_unsigned(unsigned int nbr, t_format format)
+/*int ft_putnbr_unsigned(unsigned int nbr, t_format format)
 {
 	return (0);
 }
@@ -91,7 +111,7 @@ int	ft_putptr(void *ptr, t_format format)
 {
 	return (0);
 }
-
+*/
 //////////
 void	print_format(t_format format)
 {
@@ -137,9 +157,7 @@ int	set_flags(const char *format_str,int index, t_format *format)
 {
 	char	*found;
 	char	*flags;
-	int		j;
 
-	j = 0;
 	flags = "-0# +";
 	format->cursor = index + 1;//+ 1 is to skip the first % of the format specifier entry
 	if (format->specifier == 'p')//this is an exception so that %p can be passed to puthex with the # flag
@@ -149,13 +167,17 @@ int	set_flags(const char *format_str,int index, t_format *format)
 		found = strchr(flags, format_str[format->cursor]);
 		if (found)
 		{
-			format->flags[*found] = 1;
+			format->flags[(int)*found] = 1;
 		//RETUR I REMOVED FROM CONDITION(currently negated) not working with -1, with 0 works like printf, PRINTF is ignoring extra flag characters
 			format->cursor++;
 		}
 		else
 			return (0);//check if this is needed
 	}
+	if (format->flags['0'] && format->flags['-'])
+		format->flags['0'] = 0;
+	if (format->flags[' '] && format->flags['+'])
+		format->flags[' '] = 0;
 	return (0);
 }
 
@@ -213,12 +235,26 @@ int	set_precision(const char *format_str,int index, t_format *format)
 	return (0);
 }
 
+void	init_struct(t_format *format)
+{
+	int	i;
+
+	i = 0;
+	format->invalid= 0;
+	format->field_width= 0;
+	format->precision= 0;
+	format->specifier= 0;
+	format->index= 0;
+	format->size= 0;
+	format->cursor = 0;
+	while (i++ < 256)
+		format->flags[i] = 0;
+}
 t_format	new_format(const char *format_str, int index)
 {
 	t_format	format;
 
-	format.cursor = 0;
-	format.invalid = 0;
+	init_struct(&format);
 	set_specifier(format_str, index, &format);
 	//format.invalid = -1; check if this is needed with an if above
 	if (set_flags(format_str, index, &format))
@@ -238,20 +274,20 @@ int	convert(t_format format, va_list ap)
 		return ft_putchar(va_arg(ap, int));
 	else if (format.specifier == 's')
 		return ft_putstr(va_arg(ap, char*), format);
-	else if (format.specifier == 'p')
-		return ft_putptr(va_arg(ap, void*), format);
+	//else if (format.specifier == 'p')
+	//	return ft_putptr(va_arg(ap, void*), format);
 	else if (format.specifier == 'd')
 		return ft_putnbr(va_arg(ap, int), format);
 	else if (format.specifier == 'i')
 		return ft_putnbr(va_arg(ap, int), format);
-	else if (format.specifier == 'u')
-		return ft_putnbr(va_arg(ap, unsigned int), format);
-	else if (format.specifier == 'x')
-		return ft_puthex(va_arg(ap, unsigned int), format);
-	else if (format.specifier == 'X')
-		return ft_puthex(va_arg(ap, unsigned int), format);
-	else if (format.specifier == '%')
-		return ft_putchar('%');
+	//else if (format.specifier == 'u')
+	//	return ft_putnbr_unsigned(va_arg(ap, unsigned int), format);
+	//else if (format.specifier == 'x')
+	//	return ft_puthex(va_arg(ap, unsigned int), format);
+	//else if (format.specifier == 'X')
+	//	return ft_puthex(va_arg(ap, unsigned int), format);
+	//else if (format.specifier == '%')
+	//	return ft_putchar('%');
 	return (0);
 }
 

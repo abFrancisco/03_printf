@@ -6,7 +6,7 @@
 /*   By: falves-b <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 13:58:18 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/21 17:36:39 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/23 12:25:11 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 typedef struct s_format
 {
 	int     invalid;
-	char    flags[7];
+	char    flags[256];
 	int     field_width;
 	int     precision;
 	char    specifier;

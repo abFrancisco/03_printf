@@ -6,7 +6,7 @@
 /*   By: falves-b <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 13:37:37 by falves-b          #+#    #+#             */
-/*   Updated: 2022/12/21 17:25:03 by falves-b         ###   ########.fr       */
+/*   Updated: 2022/12/23 12:58:32 by falves-b         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,19 +30,15 @@ int main()
  	//printf(str_ret, ret);
 
 	//STRING TEST
-	str = "12345%- # +-+----++##### 00047.000000000000000000000000000000000000005c4321";
+	/*str = "12345%- # +-+----++##### 00047.000000000000000000000000000000000000009c4321";
 	printf("\nTEST STRING = %s\n", str);
 	printf("\n\nMY PRINTF\n");
 	ret = ft_printf(str, "hello world");
 	printf(str_ret, ret);
 	printf("\n\nREAL PRINTF\n");
 	ret = printf(str, "hello world");
-	printf(str_ret, ret);
+	printf(str_ret, ret);*/
+
+	//INT TEST
+	ft_printf("%20d", -1234);
 }
-/*int main()
-{
-	printf("%%010i %010i\n", 5);
-	printf("%%010.i %010.i\n", 5);
-	printf("%%010.5i %010.5i\n", 5);
-	return (0);
-}*/
